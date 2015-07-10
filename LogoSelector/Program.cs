@@ -31,13 +31,14 @@ namespace LogoSelector
       string tspath = (3 <= args.Count()) ? args[2] : "";  //tsパス
 
 
-      //ファイル読込み
-      setting.Load();
+      //設定ファイル読込み
+      var setting = new setting();
+      setting = setting.Load();
 
 
       //大文字全角ひらがなに変換
       ch = util.ConvertUWH(ch);
-      shortCh = (4 < ch.Length) ? ch.Substring(0, 4) : ch; //前４三文字
+      shortCh = (4 < ch.Length) ? ch.Substring(0, 4) : ch; //前４文字
       nonNumCh = ch;
       nonNumCh = util.RemoveNumber(nonNumCh);              //数字除去
       nonNumCh = util.RemoveSymbol(nonNumCh);              //記号除去
@@ -45,66 +46,76 @@ namespace LogoSelector
       tspath = util.ConvertUWH(tspath);
 
 
+
+
       //コメント対象かをチェック
       string comment = AddComment_byKeyword(ch, setting.SearchSet_AddComment);
 
 
       //ロゴパラメーター検索
-      string[] logoParam = null;
-      var FoundParam = new Func<string[], bool>((ary) => (ary != null && ary[1] != ""));  //パラメーターがある
+      string[] Logo_Param = null;
+      var FoundParam = new Func<string[], bool>((ary) => (ary != null && ary[1] != ""));           //チェック用 Func<bool>
 
 
-      //指定キーワードから
-      if (FoundParam(logoParam) == false)
-        logoParam = SearchParam_byKeyword(ch, setting.LogoDir, setting.SearchSet_byKeyword);
+      //  指定キーワードから
+      if (FoundParam(Logo_Param) == false)
+        Logo_Param = SearchParam_byKeyword(ch, setting.LogoDir, setting.SearchSet_byKeyword);
 
-      //フォルダから
-      if (FoundParam(logoParam) == false)
+
+      //  フォルダから
+      if (FoundParam(Logo_Param) == false)
       {
         //各パターンで検索
-        var logoParam_normal = SearchParam_fromDirectory(ch, program, setting.LogoDir);            //チャンネル名
-        var logoParam__short = SearchParam_fromDirectory(shortCh, program, setting.LogoDir);       //短縮名
-        var logoParam_nonNum = SearchParam_fromDirectory(nonNumCh, program, setting.LogoDir);      //数字、記号抜き
+        //    比較対象であるLogoDir内のファイル名は、
+        //    ・大文字全角ひらがなに変換。
+        //    ・前４文字・数字記号除去はしていない。
+        var logo_Param_normal = SearchParam_fromDirectory(ch, program, setting.LogoDir);            //チャンネル名
+        var logo_Param__short = SearchParam_fromDirectory(shortCh, program, setting.LogoDir);       //短縮名
+        var logo_Param_nonNum = SearchParam_fromDirectory(nonNumCh, program, setting.LogoDir);      //数字、記号抜き
 
         //パラメーターが見つかった？
-        if (FoundParam(logoParam_normal))
+        if (FoundParam(logo_Param_normal))
         {
-          logoParam = logoParam_normal;
+          Logo_Param = logo_Param_normal;
         }
-        else if (setting.EnableShortCH && FoundParam(logoParam__short))
+        else if (setting.EnableShortCH && FoundParam(logo_Param__short))
         {
-          logoParam = logoParam__short;
+          Logo_Param = logo_Param__short;
         }
-        else if (setting.EnableNonNumCH && FoundParam(logoParam_nonNum))
+        else if (setting.EnableNonNumCH && FoundParam(logo_Param_nonNum))
         {
-          logoParam = logoParam_nonNum;
+          Logo_Param = logo_Param_nonNum;
         }
       }
 
 
-      //見つからない
-      logoParam = logoParam ?? new string[] { "", "", };                       //nullなら空文字を入れる
-      //パラメーターがない？
-      if (FoundParam(logoParam) == false) comment += setting.NotFoundParam;   //NotFoundParam時のコメント追加
+
+      Logo_Param = Logo_Param ?? new string[] { "", "", };                       //nullなら空文字を入れる
+
+      if (FoundParam(Logo_Param) == false) comment += setting.NotFoundParam;    //NotFoundParamのコメント追加
 
 
       //結果表示
-      Console.WriteLine(logoParam[0]);
-      Console.WriteLine(logoParam[1]);
+      Console.WriteLine(Logo_Param[0]);
+      Console.WriteLine(Logo_Param[1]);
       Console.WriteLine(comment);
 
     }
 
 
 
+
     #region 検索
-    //
-    //指定キーワードがあればコメント追加
-    /*
-     * SearchSet_AddComment
-     *       [0] = keyword
-     *       [1] = additional comment
-     */
+    /// <summary>
+    /// 指定キーワードがあればコメント追加
+    /// </summary>
+    /// <param name="ch"></param>
+    /// <param name="SearchSet"></param>
+    /// <returns></returns>
+    /// <remarks>
+    ///  SearchSet_AddComment[0] = keyword
+    ///                      [1] = additional comment
+    /// </remarks>
     static string AddComment_byKeyword(string ch, List<List<string>> SearchSet)
     {
       var addComment = "";
@@ -124,14 +135,19 @@ namespace LogoSelector
     }
 
 
-    //
-    //指定キーワードからパラメーター検索
-    /*
-     * SearchSet_byKeyword
-     *       [0] = keyword
-     *       [1] = logo name
-     *       [2] = param name
-     */
+
+    /// <summary>
+    /// 指定キーワードからパラメーター検索
+    /// </summary>
+    /// <param name="ch"></param>
+    /// <param name="logoDir"></param>
+    /// <param name="SearchSet"></param>
+    /// <returns></returns>
+    /// <remarks>
+    ///   SearchSet_byKeyword[0] = keyword
+    ///                      [1] = logo name
+    ///                      [2] = param name
+    /// </remarks>
     static string[] SearchParam_byKeyword(string ch, string logoDir, List<List<string>> SearchSet)
     {
       foreach (var oneset in SearchSet)
@@ -145,7 +161,7 @@ namespace LogoSelector
 
         if (found != -1)                                   //hit
         {
-          //パスチェック、なければlogoDir内をチェック
+          //フルパスでファイルチェック、なければlogoDir内のファイル名としてチェック
           var exist_logo = (File.Exists(logo)) ?
                             logo :
                             (File.Exists(Path.Combine(logoDir, logo))) ?
@@ -163,17 +179,24 @@ namespace LogoSelector
     }
 
 
+
     #region SearchParam_fromDirectory
-    //
-    //ロゴフォルダ内からパラメーター検索
-    //
+    /// <summary>
+    /// ロゴフォルダ内からパラメーター検索
+    /// </summary>
+    /// <param name="ch"></param>
+    /// <param name="program"></param>
+    /// <param name="logoDir"></param>
+    /// <returns></returns>
     static string[] SearchParam_fromDirectory(string ch, string program, string logoDir)
     {
       if (ch == "") return null;
       if (Directory.Exists(logoDir) == false) return null;
 
 
+
       //Search lgd
+      //ch名からロゴファイル検索
       var foundlgd = new Func<string>(() =>
       {
         var lgdfiles = Directory.GetFiles(logoDir, "*.lgd");
@@ -192,7 +215,10 @@ namespace LogoSelector
 
 
 
+      //
       //Search param
+      //lgdファイル名からパラメーターファイル検索
+      //複数見つかれば番組名の含まれているファイルを優先
       var foundparam = new Func<string, string>((lgdpath) =>
       {
         var paramlist = new List<string>();
@@ -200,26 +226,35 @@ namespace LogoSelector
         var paramfiles = Directory.GetFiles(logoDir, lgdname + "*.autoTune.param");
         if (paramfiles.Count() == 0) return null;
 
-        //パラメーターファイル郡から番組名の含まれているファイルを優先
-        foreach (var parampath in paramfiles)
+        //番組名の含まれているファイルを優先
+        foreach (var path in paramfiles)
         {
-          string paramname = Path.GetFileName(parampath);                      //ＣＢＣ.2014.lgd.ニュース.COMMENT.autoTune.param
-          paramname = paramname.Replace(lgdname, "");                          //               .ニュース.COMMENT.autoTune.param
-          paramname = Regex.Replace(paramname,                                 //               .ニュース.COMMENT
+          string name = Path.GetFileName(path);                 //           ＣＢＣ.2014.lgd.ニュース.COMMENT.autoTune.param
+          //lgdname除去
+          name = name.Replace(lgdname, "");                     //                          .ニュース.COMMENT.autoTune.param
+          //.autoTune.param除去
+          name = Regex.Replace(name,                            //                          .ニュース.COMMENT
                       @".autoTune.param$", "", RegexOptions.IgnoreCase);
-          paramname = Regex.Replace(paramname, @"\.*(.*)\.(.*)", "$1");        //   ニュース
-          paramname = util.ConvertUWH(paramname);          //大文字全角ひらがなで比較
-          if (paramname == "") continue;
+          //先頭のピリオド除去
+          name = Regex.Replace(name, @"\.+(.*)", "$1");         //                           ニュース.COMMENT
+          //先頭からピリオド以外取得、ピリオドがあればそこまで
+          name = Regex.Replace(name, @"([^.]*)?\.?(.*)", "$1"); //                           ニュース
 
-          int found = program.IndexOf(paramname);
-          if (found != -1) return parampath;               //変形前のパスを返す。
+          name = util.ConvertUWH(name);
+
+          if (name == "") continue;
+
+          int found = program.IndexOf(name);
+          if (found != -1) return path;                             //変形前のパスを返す。
         }
         //番組名が見つからない。ファイル郡の最初の要素を返す。
         return paramfiles[0];
       })(foundlgd);
 
+
       //not found param ?
       if (foundparam == null) return new string[] { foundlgd, "" };  //paramが見つからない
+
 
 
 
@@ -262,7 +297,11 @@ namespace LogoSelector
         return text;
       }
 
-      //記号削除
+      /// <summary>
+      /// 記号削除
+      /// </summary>
+      /// <param name="text"></param>
+      /// <returns></returns>
       public static string RemoveSymbol(string text)
       {
         var symbol_N = @" !\""#$%&'()=-~^|\\`@{[}]*:+;_?/>.<,・";
@@ -272,12 +311,15 @@ namespace LogoSelector
         return text;
       }
 
-      //数字削除
+      /// <summary>
+      /// 数字削除
+      /// </summary>
+      /// <param name="text"></param>
+      /// <returns></returns>
       public static string RemoveNumber(string text)
       {
         return Regex.Replace(text, @"\d", "");
       }
-
 
     }
     #endregion
@@ -285,36 +327,43 @@ namespace LogoSelector
 
 
 
-    #region 設定ファイル
+    #region 設定
     class setting
     {
-      public static string LogoDir { get; private set; }
-      public static List<List<string>> SearchSet_byKeyword { get; private set; }
-      public static List<List<string>> SearchSet_AddComment { get; private set; }
-      public static string NotFoundParam { get; private set; }
-      public static bool EnableShortCH { get; private set; }
-      public static bool EnableNonNumCH { get; private set; }
+      public string LogoDir { get; private set; }
+      public List<List<string>> SearchSet_byKeyword { get; private set; }
+      public List<List<string>> SearchSet_AddComment { get; private set; }
+      public string NotFoundParam { get; private set; }
+      public bool EnableShortCH { get; private set; }
+      public bool EnableNonNumCH { get; private set; }
 
-      public static void Load()
+      //ファイル読込み
+      public static setting Load()
       {
+
         //initialize
-        LogoDir = "";
-        SearchSet_byKeyword = new List<List<string>>();
-        SearchSet_AddComment = new List<List<string>>();
-        NotFoundParam = "";
-        EnableShortCH = false;
-        EnableNonNumCH = false;
-
-        //パス
-        var AppPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        var AppDir = Path.GetDirectoryName(AppPath);
-        var AppName = Path.GetFileNameWithoutExtension(AppPath);
-        var path = Path.Combine(AppDir, AppName + ".txt");
+        var setting = new setting();
+        setting.LogoDir = "";
+        setting.SearchSet_byKeyword = new List<List<string>>();
+        setting.SearchSet_AddComment = new List<List<string>>();
+        setting.NotFoundParam = "";
+        setting.EnableShortCH = false;
+        setting.EnableNonNumCH = false;
 
 
-        //読込み
-        if (File.Exists(path) == false) { File.WriteAllText(path, defaultSetting, Encoding.UTF8); }
-        var readfile = File.ReadAllLines(path);
+
+        //ファイル読込み
+        var txtpath = new Func<string>(() =>
+        {
+          var AppPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+          var AppDir = Path.GetDirectoryName(AppPath);
+          var AppName = Path.GetFileNameWithoutExtension(AppPath);
+          var path = Path.Combine(AppDir, AppName + ".txt");
+          return path;
+        })();
+
+        if (File.Exists(txtpath) == false) { File.WriteAllText(txtpath, SettingText.Default, Encoding.UTF8); }
+        var readfile = File.ReadAllLines(txtpath);
 
         //コメント削除
         var textAll = (from line in readfile
@@ -322,6 +371,8 @@ namespace LogoSelector
                        let noComm = (-1 < found) ? line.Substring(0, found) : line
                        select noComm.Trim()
                        ).ToList();
+
+
 
         //
         //改行ごとのブロックに分割
@@ -377,6 +428,7 @@ namespace LogoSelector
           });
 
 
+
         //セクション取り出し
         var sectionLogoDir = TakeSection("LogoDir", -1).SelectMany(blk => blk).ToList();
         var sectionKeyword = TakeSection("SearchParam", 3);
@@ -386,14 +438,15 @@ namespace LogoSelector
 
 
 
+
         //読み取り結果
-        LogoDir = (0 < sectionLogoDir.Count) ? sectionLogoDir[0] : "";
-        SearchSet_byKeyword = sectionKeyword;
-        SearchSet_AddComment = sectionComment;
-        NotFoundParam = (0 < sectionCommNotFound.Count) ? sectionCommNotFound[0] : "";
-        EnableShortCH = sectionOption.Any((opt) =>
+        setting.LogoDir = (0 < sectionLogoDir.Count) ? sectionLogoDir[0] : "";
+        setting.SearchSet_byKeyword = sectionKeyword;
+        setting.SearchSet_AddComment = sectionComment;
+        setting.NotFoundParam = (0 < sectionCommNotFound.Count) ? sectionCommNotFound[0] : "";
+        setting.EnableShortCH = sectionOption.Any((opt) =>
                           Regex.Match(opt, @"^AppendSearch_ShortCh$", RegexOptions.IgnoreCase).Success);
-        EnableNonNumCH = sectionOption.Any((opt) =>
+        setting.EnableNonNumCH = sectionOption.Any((opt) =>
                           Regex.Match(opt, @"^AppendSearch_NonNumCh$", RegexOptions.IgnoreCase).Success);
 
 
@@ -424,11 +477,18 @@ namespace LogoSelector
         //          */
         #endregion
 
-        return;
+        return setting;
       }
+    }
 
-      #region  DefaultSetting
-      const string defaultSetting =
+    #endregion
+
+
+
+    #region 初期設定ファイル
+    static class SettingText
+    {
+      public const string Default =
 @"
 
 ===============================================================================
@@ -461,8 +521,8 @@ C:\LogoData                  //指定できるフォルダは１つ
 
 [SearchParam]
 abc                          //keyword
-ABCDE001.lgd                 //logo
-ABCDE.lgd.autoTune.param     //param
+ABCDE001.lgd                 //logo path
+ABCDE.lgd.autoTune.param     //param path
                              //改行をいれる
 ｱｲｳｴｵ
 あいうえお123.lgd
@@ -485,9 +545,7 @@ ABCDE.lgd.autoTune.param     //param
 
 
 ";
-      #endregion
     }
-
     #endregion
 
 
