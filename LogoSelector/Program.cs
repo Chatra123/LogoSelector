@@ -1,27 +1,20 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Diagnostics;
-using Microsoft.VisualBasic;
-using System.Globalization;
 using System.Text.RegularExpressions;
-
-#region regionTitle
-#endregion
 
 namespace LogoSelector
 {
-  class Program
+  internal class Program
   {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
       //テスト引数
       //args = new string[] { "CBC0123", "", "", };
       //args = new string[] { "あぁアァｱｲｳＡAａa", "", "", };
-
 
       //引数
       string ch = (1 <= args.Count()) ? args[0] : "";      //チャンネル
@@ -30,11 +23,9 @@ namespace LogoSelector
       string program = (2 <= args.Count()) ? args[1] : ""; //プログラム
       string tspath = (3 <= args.Count()) ? args[2] : "";  //tsパス
 
-
       //設定ファイル読込み
       var setting = new setting();
       setting = setting.Load();
-
 
       //大文字全角ひらがなに変換
       ch = util.ConvertUWH(ch);
@@ -45,22 +36,16 @@ namespace LogoSelector
       program = util.ConvertUWH(program);
       tspath = util.ConvertUWH(tspath);
 
-
-
-
       //コメント対象かをチェック
       string comment = AddComment_byKeyword(ch, setting.SearchSet_AddComment);
-
 
       //ロゴパラメーター検索
       string[] Logo_Param = null;
       var FoundParam = new Func<string[], bool>((ary) => (ary != null && ary[1] != ""));           //チェック用 Func<bool>
 
-
       //  指定キーワードから
       if (FoundParam(Logo_Param) == false)
         Logo_Param = SearchParam_byKeyword(ch, setting.LogoDir, setting.SearchSet_byKeyword);
-
 
       //  フォルダから
       if (FoundParam(Logo_Param) == false)
@@ -88,24 +73,18 @@ namespace LogoSelector
         }
       }
 
-
-
       Logo_Param = Logo_Param ?? new string[] { "", "", };                       //nullなら空文字を入れる
 
       if (FoundParam(Logo_Param) == false) comment += setting.NotFoundParam;    //NotFoundParamのコメント追加
-
 
       //結果表示
       Console.WriteLine(Logo_Param[0]);
       Console.WriteLine(Logo_Param[1]);
       Console.WriteLine(comment);
-
     }
 
-
-
-
     #region 検索
+
     /// <summary>
     /// 指定キーワードがあればコメント追加
     /// </summary>
@@ -116,7 +95,7 @@ namespace LogoSelector
     ///  SearchSet_AddComment[0] = keyword
     ///                      [1] = additional comment
     /// </remarks>
-    static string AddComment_byKeyword(string ch, List<List<string>> SearchSet)
+    private static string AddComment_byKeyword(string ch, List<List<string>> SearchSet)
     {
       var addComment = "";
 
@@ -134,8 +113,6 @@ namespace LogoSelector
       return addComment;
     }
 
-
-
     /// <summary>
     /// 指定キーワードからパラメーター検索
     /// </summary>
@@ -148,7 +125,7 @@ namespace LogoSelector
     ///                      [1] = logo name
     ///                      [2] = param name
     /// </remarks>
-    static string[] SearchParam_byKeyword(string ch, string logoDir, List<List<string>> SearchSet)
+    private static string[] SearchParam_byKeyword(string ch, string logoDir, List<List<string>> SearchSet)
     {
       foreach (var oneset in SearchSet)
       {
@@ -173,14 +150,12 @@ namespace LogoSelector
                             : param;
           return new string[] { exist_logo, exist_param, };
         }
-
       }
       return null;
     }
 
-
-
     #region SearchParam_fromDirectory
+
     /// <summary>
     /// ロゴフォルダ内からパラメーター検索
     /// </summary>
@@ -188,12 +163,10 @@ namespace LogoSelector
     /// <param name="program"></param>
     /// <param name="logoDir"></param>
     /// <returns></returns>
-    static string[] SearchParam_fromDirectory(string ch, string program, string logoDir)
+    private static string[] SearchParam_fromDirectory(string ch, string program, string logoDir)
     {
       if (ch == "") return null;
       if (Directory.Exists(logoDir) == false) return null;
-
-
 
       //Search lgd
       //ch名からロゴファイル検索
@@ -212,8 +185,6 @@ namespace LogoSelector
 
       //not found lgd ?
       if (foundlgd == "") return null;                     //lgdが見つからない
-
-
 
       //
       //Search param
@@ -251,26 +222,20 @@ namespace LogoSelector
         return paramfiles[0];
       })(foundlgd);
 
-
       //not found param ?
       if (foundparam == null) return new string[] { foundlgd, "" };  //paramが見つからない
-
-
-
 
       //lgd, paramが見つかった。
       return new string[] { foundlgd, foundparam };
     }
-    #endregion
 
+    #endregion SearchParam_fromDirectory
 
-    #endregion
-
-
-
+    #endregion 検索
 
     #region util 文字形式の変換
-    class util
+
+    private class util
     {
       /// <summary>
       /// 小文字半角カタカナに変換
@@ -284,6 +249,7 @@ namespace LogoSelector
         text = Strings.StrConv(text, VbStrConv.Lowercase, 0x0411);
         return text;
       }
+
       /// <summary>
       /// 大文字全角ひらがなに変換
       /// </summary>
@@ -320,15 +286,13 @@ namespace LogoSelector
       {
         return Regex.Replace(text, @"\d", "");
       }
-
     }
-    #endregion
 
-
-
+    #endregion util 文字形式の変換
 
     #region 設定
-    class setting
+
+    private class setting
     {
       public string LogoDir { get; private set; }
       public List<List<string>> SearchSet_byKeyword { get; private set; }
@@ -340,7 +304,6 @@ namespace LogoSelector
       //ファイル読込み
       public static setting Load()
       {
-
         //initialize
         var setting = new setting();
         setting.LogoDir = "";
@@ -349,8 +312,6 @@ namespace LogoSelector
         setting.NotFoundParam = "";
         setting.EnableShortCH = false;
         setting.EnableNonNumCH = false;
-
-
 
         //ファイル読込み
         var txtpath = new Func<string>(() =>
@@ -372,8 +333,6 @@ namespace LogoSelector
                        select noComm.Trim()
                        ).ToList();
 
-
-
         //
         //改行ごとのブロックに分割
         var Blocks = new List<List<string>>();
@@ -394,7 +353,6 @@ namespace LogoSelector
             }
             else//ブロック追加
               oneBlock.Add(line);
-
           }
           else
           {
@@ -404,9 +362,6 @@ namespace LogoSelector
           }
         }
         if (0 < oneBlock.Count) Blocks.Add(oneBlock);
-
-
-
 
         //
         //セクションごとのブロック取り出し      [LogoDir]    [LogoParam]
@@ -427,17 +382,12 @@ namespace LogoSelector
             return section3.ToList();
           });
 
-
-
         //セクション取り出し
         var sectionLogoDir = TakeSection("LogoDir", -1).SelectMany(blk => blk).ToList();
         var sectionKeyword = TakeSection("SearchParam", 3);
         var sectionComment = TakeSection("AddComment", 2);
         var sectionCommNotFound = TakeSection("NotFoundParam", -1).SelectMany(blk => blk).ToList();
         var sectionOption = TakeSection("Option", -1).SelectMany(blk => blk).ToList();
-
-
-
 
         //読み取り結果
         setting.LogoDir = (0 < sectionLogoDir.Count) ? sectionLogoDir[0] : "";
@@ -449,11 +399,11 @@ namespace LogoSelector
         setting.EnableNonNumCH = sectionOption.Any((opt) =>
                           Regex.Match(opt, @"^AppendSearch_NonNumCh$", RegexOptions.IgnoreCase).Success);
 
-
         #region 結果表示
+
         //
         //show result
-        /*     
+        /*
         Console.Error.WriteLine("[LogoDir]");
         Console.Error.WriteLine(LogoDir);
         Console.Error.WriteLine();
@@ -475,18 +425,18 @@ namespace LogoSelector
         Console.Error.WriteLine("EnableShortCH = " + EnableShortCH);
         //*/
         //          */
-        #endregion
+
+        #endregion 結果表示
 
         return setting;
       }
     }
 
-    #endregion
-
-
+    #endregion 設定
 
     #region 初期設定ファイル
-    static class SettingText
+
+    private static class SettingText
     {
       public const string Default =
 @"
@@ -494,7 +444,6 @@ namespace LogoSelector
 ===============================================================================
 ### LogoSelectorについて
   ロゴ、パラメーターを検索しフルパスを表示します。
-
 
 ### 処理の流れ
 1. 引数からチャンネル名、プログラム名を受け取る。
@@ -507,17 +456,14 @@ namespace LogoSelector
     * lgdファイルが見つかったら、lgdファイル名と一致するparamファイルを探す。
     * ファイルが見つかればパスを表示して終了。
 
-
 ・全角半角、大文字小文字、ひらがなカタカナの違いは無視される。
 
 ・UTF-8 bom
 
 ===============================================================================
 
-
 [LogoDir]
 C:\LogoData                  //指定できるフォルダは１つ
-
 
 [SearchParam]
 abc                          //keyword
@@ -528,29 +474,20 @@ ABCDE.lgd.autoTune.param     //param path
 あいうえお123.lgd
 あいうえお123.lgd.ニュース.autoTune.param
 
-
 [AddComment]
 //BS                           //keyword
 //-midprc 0                    //comment
 
-
 [NotFoundParam]
 //-Abort_pfAdapter             //パラメーターが見つからないときにコメント追加
-
 
 [Option]
 //AppendSearch_ShortCH         //チャンネル名の前４文字でも検索する
 //AppendSearch_NonNumCH        //チャンネル名から数値・記号を抜いた文字列でも検索する
 
-
-
 ";
     }
-    #endregion
 
-
-
-
+    #endregion 初期設定ファイル
   }
 }
-
