@@ -339,19 +339,19 @@ namespace LogoSelector
         var readfile = File.ReadAllLines(txtpath);
 
         //コメント削除
-        var textAll = (from line in readfile
-                       let found = line.IndexOf("//")
-                       let noComm = (-1 < found) ? line.Substring(0, found) : line
-                       select noComm.Trim()
-                       ).ToList();
-        
+        readfile = (from line in readfile
+                    let found = line.IndexOf("//")
+                    let trimComm = (0 <= found) ? line.Substring(0, found) : line
+                    select trimComm.Trim()
+                    ).ToArray();
+
         //
         //改行 or [セクション名]で分割
         //
         var Blocks = new List<List<string>>();
-        var oneBlock = new List<string>();      //改行ごとの塊をoneBlockとする
+        var oneBlock = new List<string>();       //改行ごとの塊をoneBlockとする
 
-        foreach (var line in textAll)
+        foreach (var line in readfile)
         {
           //文字列がある？
           if (line != string.Empty)
