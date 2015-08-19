@@ -13,7 +13,7 @@
     '  C:\logodata\ABC.lgd
     '  C:\logodata\ABC.lgd.autoTune.param
     '
-    'パラメータファイルがなければAbort_pfAdapterを表示。
+    'パラメータファイルがなければ-Abort_pfAdapterを表示。
 
 '備考
     '・大文字小文字の違いは無視する。
@@ -21,7 +21,7 @@
     '・パラメータファイルの先頭はロゴデータ名と同じする。
             'ABC.lgd
             'ABC.lgd.autoTune.param
-    '・チャンネル名で検索し見つからなければ前三文字で検索する。
+    '・チャンネル名で検索し見つからなければ前４文字で検索する。
     '・ファイルの命名規則、環境に合わせてスクリプトを変更してください。
 
 
@@ -52,12 +52,12 @@
 
     channel = Trim( UCase(channel))    '大文字に変換
     program = Trim( UCase(program))
-    channel_sht = Left(channel, 3)     '短縮名  チャンネルの前３文字だけで検索
+    channel_sht = Left(channel, 4)     '短縮名  チャンネルの前４文字だけで検索
 
 
 
 '---------------------------
-'ファイルを直接指定              '大文字で比較
+'ファイルを直接指定       大文字で比較
 '---------------------------
     If 0 < InStr(1, channel, "CBC", 1) Then                '半角CBC
       logoPath    = fso.BuildPath(LogoDirPath, "ＣＢＣ.lgd")

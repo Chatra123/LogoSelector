@@ -55,9 +55,9 @@ namespace LogoSelector
         //    ・大文字全角ひらがなに変換
         //    ・前４文字・数字記号除去
         //　　はしていない。
-        var logo_Param_normal = SearchParam_fromDirectory(ch, program, setting.LogoDir);            //チャンネル名
-        var logo_Param__short = SearchParam_fromDirectory(shortCh, program, setting.LogoDir);       //短縮名
-        var logo_Param_nonNum = SearchParam_fromDirectory(nonNumCh, program, setting.LogoDir);      //数字、記号抜き
+        var logo_Param_normal = SearchParam_fromDirectory(ch, program, setting.LogoDir);           //チャンネル名
+        var logo_Param__short = SearchParam_fromDirectory(shortCh, program, setting.LogoDir);      //短縮名
+        var logo_Param_nonNum = SearchParam_fromDirectory(nonNumCh, program, setting.LogoDir);     //数字、記号抜き
 
         //パラメーターが見つかった？
         if (FoundParam(logo_Param_normal))
@@ -500,6 +500,7 @@ namespace LogoSelector
 
   ロゴ、パラメーターを検索しフルパスを表示します。
 
+
 ### 処理の流れ
 
 1. 引数からチャンネル名、プログラム名を受け取る。
@@ -511,13 +512,20 @@ namespace LogoSelector
     * [LogoDir]内をファイル名としてチェック
     * ファイルが見つかればパスを表示して終了。
 
-4. [LogoDir]内のlgdファイルを列挙してチャンネル名が含まれているファイルを探す。
-    * lgdファイルが見つかったら、lgdファイル名と一致するparamファイルを探す。
+4. [LogoDir]内のlgdファイルを列挙して、
+    * チャンネル名が含まれているlgdファイルを探す。
+    * lgdファイル名と一致するparamファイルを探す。
     * ファイルが見つかればパスを表示して終了。
+
+
+### メモ
 
 ・全角半角、大文字小文字、ひらがなカタカナの違いは無視される。
 
+・//以降の文字と前後の空白は無視します。
+
 ・UTF-8 bom
+
 
 ===============================================================================
 
@@ -530,7 +538,7 @@ C:\LogoData                         //ファイルのあるフォルダ
 東海テレビ001.lgd.autoTune.param    //param path
                                     //区切りとして改行をいれる
 ＢＳジャパン
-c:\logo\BSジャパン.lgd
+c:\logo\BSジャパン.lgd              //ファイル名又はフルパス
 c:\logo\BSジャパン.lgd.ニュース.autoTune.param
 
 [AddComment]
