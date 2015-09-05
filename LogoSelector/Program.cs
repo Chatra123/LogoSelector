@@ -52,12 +52,12 @@ namespace LogoSelector
       {
         //各パターンで検索
         //    比較対象であるLogoDir内の各ファイル名に対して、
-        //    ・大文字全角ひらがなに変換
-        //    ・前４文字・数字記号除去
+        //    ・前４文字
+        //    ・数字、記号除去
         //　　はしていない。
-        var logo_Param_normal = SearchParam_fromDirectory(ch, program, setting.LogoDir);            //チャンネル名
-        var logo_Param__short = SearchParam_fromDirectory(shortCh, program, setting.LogoDir);       //短縮名
-        var logo_Param_nonNum = SearchParam_fromDirectory(nonNumCh, program, setting.LogoDir);      //数字、記号抜き
+        var logo_Param_normal = SearchParam_fromDirectory(ch, program, setting.LogoDir);           //チャンネル名
+        var logo_Param__short = SearchParam_fromDirectory(shortCh, program, setting.LogoDir);      //短縮名
+        var logo_Param_nonNum = SearchParam_fromDirectory(nonNumCh, program, setting.LogoDir);     //数字、記号抜き
 
         //パラメーターが見つかった？
         if (FoundParam(logo_Param_normal))
@@ -339,19 +339,19 @@ namespace LogoSelector
         var readfile = File.ReadAllLines(txtpath);
 
         //コメント削除
-        var textAll = (from line in readfile
-                       let found = line.IndexOf("//")
-                       let noComm = (-1 < found) ? line.Substring(0, found) : line
-                       select noComm.Trim()
-                       ).ToList();
-        
+        readfile = (from line in readfile
+                    let found = line.IndexOf("//")
+                    let trimComm = (0 <= found) ? line.Substring(0, found) : line
+                    select trimComm.Trim()
+                    ).ToArray();
+
         //
         //改行 or [セクション名]で分割
         //
         var Blocks = new List<List<string>>();
-        var oneBlock = new List<string>();      //改行ごとの塊をoneBlockとする
+        var oneBlock = new List<string>();       //改行ごとの塊をoneBlockとする
 
-        foreach (var line in textAll)
+        foreach (var line in readfile)
         {
           //文字列がある？
           if (line != string.Empty)
@@ -494,12 +494,12 @@ namespace LogoSelector
 
       public const string Default =
 @"
-
 ===============================================================================
 ### LogoSelectorについて
 
   ロゴ、パラメーターを検索しフルパスを表示します。
 
+　
 ### 処理の流れ
 
 1. 引数からチャンネル名、プログラム名を受け取る。
@@ -509,41 +509,53 @@ namespace LogoSelector
 3. キーワードが含まれているなら、
     * ロゴ、パラメーターをフルパスとしてチェック
     * [LogoDir]内をファイル名としてチェック
-    * ファイルが見つかればパスを表示して終了。
+    * ファイルが見つかればパス、コメントを表示して終了。
 
-4. [LogoDir]内のlgdファイルを列挙してチャンネル名が含まれているファイルを探す。
-    * lgdファイルが見つかったら、lgdファイル名と一致するparamファイルを探す。
-    * ファイルが見つかればパスを表示して終了。
+4. [LogoDir]内のlgdファイルを列挙して、
+    * チャンネル名が含まれているlgdファイルを探す。
+    * lgdファイル名と一致するparamファイルを探す。
+    * ファイルが見つかればパス、コメントを表示して終了。
+
+
+### 他
 
 ・全角半角、大文字小文字、ひらがなカタカナの違いは無視される。
 
+・//以降の文字と前後の空白は無視します。
+
 ・UTF-8 bom
+
 
 ===============================================================================
 
 [LogoDir]
-C:\LogoData                         //ファイルのあるフォルダ
+C:\LogoData1                         //lgdファイルのあるフォルダ
+D:\LogoData2
+
 
 [SearchParam]
-東海                                //keyword
-東海テレビ001.lgd                   //logo path
-東海テレビ001.lgd.autoTune.param    //param path
-                                    //区切りとして改行をいれる
-ＢＳジャパン
-c:\logo\BSジャパン.lgd
-c:\logo\BSジャパン.lgd.ニュース.autoTune.param
+TokaiTV                             //keyword
+東海.lgd                            //logo
+東海.lgd.autoTune.param             //param
+                                    //区切りとして改行
+
+BSJapan
+c:\logo\BS-Japan_2015.lgd           //ファイル名又はフルパス
+c:\logo\BS-Japan.lgd.ニュース.autoTune.param
+
 
 [AddComment]
-//チャンネル名にBSが含まれていると、コメントとして-midprc 0を追加
-//BS                                //keyword
+//BS                                //keyword  チャンネル名にBSを含んでいるとコメント追加
 //-midprc 0                         //comment
+
 
 [NotFoundParam]
 //-Abort_pfAdapter                  //パラメーターが見つからないときにコメント追加
 
+
 [Option]
-//AppendSearch_ShortCH              //チャンネル名の前４文字でも検索する
-//AppendSearch_NonNumCH             //チャンネル名から数値・記号を抜いた文字列でも検索する
+//AppendSearch_ShortCH              //チャンネル名の前４文字の文字列でも検索する
+//AppendSearch_NonNumCH             //チャンネル名から数字・記号を抜いた文字列でも検索する
 
 ";
     }
