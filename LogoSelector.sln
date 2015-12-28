@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogoSelector", "LogoSelector\LogoSelector.csproj", "{ECE88ADC-A6B4-40FC-9928-6DBF0B2115D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LgdLogo", "..\LgdLogo\LgdLogo\LgdLogo.csproj", "{279ADFAF-3C61-4FB1-8405-C3FEBA8B9F66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{ECE88ADC-A6B4-40FC-9928-6DBF0B2115D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECE88ADC-A6B4-40FC-9928-6DBF0B2115D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECE88ADC-A6B4-40FC-9928-6DBF0B2115D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{279ADFAF-3C61-4FB1-8405-C3FEBA8B9F66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{279ADFAF-3C61-4FB1-8405-C3FEBA8B9F66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{279ADFAF-3C61-4FB1-8405-C3FEBA8B9F66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{279ADFAF-3C61-4FB1-8405-C3FEBA8B9F66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
