@@ -274,11 +274,11 @@ C:\logo\BS-Japan.lgd.autoTune.param
 
 
 [NotFoundLogo]
-//-Suspend_pfMain                   //ロゴが見つからないときにコメント追加
+//-Suspend_pfAMain                   //ロゴが見つからないときにコメント追加
 
 
 [NotFoundParam]
-//-Suspend_pfMain                   //パラメーターが見つからないときにコメント追加
+//-Suspend_pfAMain                   //パラメーターが見つからないときにコメント追加
 
 
 [Option]
