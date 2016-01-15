@@ -42,8 +42,9 @@ namespace LogoSelector
       {
         if (Directory.Exists(dir) == false) continue;
 
-        // DirectoryInfo().GetFiles("*.ldp")だと *.ldp に加えて *.ldp2 も取得され
+        // DirectoryInfo().GetFiles("*.ldp")だと *.ldp に加えて *.ldp2 も取得され、
         //拡張子が上手く処理できない。
+        //*.ldp* でないのに *.ldp2 も取得してしまう。
         //全ファイル取得してから自前で判定する。
         var files = new DirectoryInfo(dir).GetFiles();
 
