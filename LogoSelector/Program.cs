@@ -9,6 +9,8 @@ using Microsoft.VisualBasic;
 
 namespace LogoSelector
 {
+  using OctNov.Text;
+
   internal class Program
   {
     private static void Main(string[] args)
