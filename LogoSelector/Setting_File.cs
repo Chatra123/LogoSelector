@@ -233,7 +233,7 @@ namespace LogoSelector
 
 4.含まれていないなら、
     * [LogoDir]内の lgdファイルを列挙して、
-    * チャンネル名が含まれている lgdファイルを探す。
+      チャンネル名が含まれている lgdファイルを探す。
     * lgdファイル名と一致する paramファイルを探す。
     * ファイルが見つかればパス、コメントを表示して終了。
 
@@ -257,14 +257,14 @@ D:\LogoData2
 
 
 [SearchKeyword]
-TokaiTV                             //keyword
-東海.lgd                            //logo
-東海.lgd.autoTune.param             //param
+東海                                //keyword
+東海テレビ2016.lgd                  //logo
+東海テレビ2016.lgd.autoTune.param   //param
                                     //区切りとして改行
 
-BSJapan
-c:\logo\BS-Japan.lgd                //ファイル名又はフルパス
-c:\logo\BS-Japan.lgd.autoTune.param
+BSジャパン
+C:\logo\BS-Japan.lgd                //ファイル名　又は　フルパス
+C:\logo\BS-Japan.lgd.autoTune.param
 
 
 [AddComment]
@@ -274,11 +274,11 @@ c:\logo\BS-Japan.lgd.autoTune.param
 
 
 [NotFoundLogo]
-//-Suspend_pfMain                  //ロゴが見つからないときにコメント追加
+//-Suspend_pfAMain                   //ロゴが見つからないときにコメント追加
 
 
 [NotFoundParam]
-//-Suspend_pfMain                  //パラメーターが見つからないときにコメント追加
+//-Suspend_pfAMain                   //パラメーターが見つからないときにコメント追加
 
 
 [Option]

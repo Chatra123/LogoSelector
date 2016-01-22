@@ -9,14 +9,15 @@ using Microsoft.VisualBasic;
 
 namespace LogoSelector
 {
+  using OctNov.Text;
+
   internal class Program
   {
     private static void Main(string[] args)
     {
       //テスト引数
-      //args = new string[] { "CBC0123", "", "", };
+      //args = new string[] { "tokai", "", "", };
       //args = new string[] { "あぁアァｱｲｳＡAａa", "", "", };
-
 
 
       //設定ファイル読込み

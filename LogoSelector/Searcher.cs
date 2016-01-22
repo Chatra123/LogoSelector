@@ -9,6 +9,8 @@ using Microsoft.VisualBasic;
 
 namespace LogoSelector
 {
+  using OctNov.Text;
+
   class Searcher
   {
 
