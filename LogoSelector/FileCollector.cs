@@ -233,14 +233,12 @@ namespace LogoSelector
     /// </summary>
     static void CleanTmpDir()
     {
-      string tmpDir;
-      tmpDir = System.IO.Path.GetTempPath();
-      tmpDir = System.IO.Path.Combine(tmpDir, "LogoSelector");
+      string winTmp = System.IO.Path.GetTempPath();
+      string logoTmpDir = System.IO.Path.Combine(winTmp, "LogoSelector");
 
       const double nDaysBefore = 0.50;
-      DeleteWorkItem.Delete_file(nDaysBefore, tmpDir, "*.LogoSelector.tmp.lgd");
-
-      DeleteWorkItem.Delete_emptydir(tmpDir);
+      DeleteWorkItem.Delete_file(nDaysBefore, logoTmpDir, "*.LogoSelector.tmp.lgd");
+      DeleteWorkItem.Delete_emptydir(logoTmpDir);
     }
 
   }//  class LgdFile
@@ -280,8 +278,23 @@ namespace LogoSelector
       if (Directory.Exists(directory) == false) return;
 
       //ファイル取得
-      var dirInfo = new DirectoryInfo(directory);
-      var files = dirInfo.GetFiles(searchKey, SearchOption.TopDirectoryOnly);
+      var files = new FileInfo[] { };
+      try
+      {
+        var dirInfo = new DirectoryInfo(directory);
+        files = dirInfo.GetFiles(searchKey, SearchOption.AllDirectories);
+      }
+      catch (System.UnauthorizedAccessException)
+      {
+        /* Java  jre-8u73-windows-i586.exeを実行してインストール用のウィンドウを表示させると、
+         * Tempフォルダにjds262768703.tmpがReadOnlyで作成される。
+         * 
+         * アクセス権限の無いファイルが含まれているフォルダに
+         * files = dirInfo.GetFiles();
+         * を実行すると System.UnauthorizedAccessExceptionが発生する。
+         */
+        return;
+      }
 
       foreach (var onefile in files)
       {
