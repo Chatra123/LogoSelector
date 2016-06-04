@@ -236,9 +236,7 @@ namespace LogoSelector
       string winTmp = System.IO.Path.GetTempPath();
       string logoTmpDir = System.IO.Path.Combine(winTmp, "LogoSelector");
 
-      const double nDaysBefore = 0.50;
-      DeleteWorkItem.Delete_file(nDaysBefore, logoTmpDir, "*.LogoSelector.tmp.lgd");
-      DeleteWorkItem.Delete_emptydir(logoTmpDir);
+      FileCleaner.Delete_File(1.0, logoTmpDir, "*.LogoSelector.tmp.lgd");
     }
 
   }//  class LgdFile
@@ -262,20 +260,22 @@ namespace LogoSelector
 
 
   /// <summary>
-  /// ファイル削除
+  /// 削除処理　実行部
   /// </summary>
-  static class DeleteWorkItem
+  static class FileCleaner
   {
     /// <summary>
-    /// 削除処理の実行部
+    /// ファイル削除
     /// </summary>
     /// <param name="nDaysBefore">Ｎ日前のファイルを削除対象にする</param>
     /// <param name="directory">ファイルを探すフォルダ。　サブフォルダ内も対象</param>
     /// <param name="searchKey">ファイル名に含まれる文字。ワイルドカード可 * </param>
     /// <param name="ignoreKey">除外するファイルに含まれる文字。ワイルドカード不可 × </param>
-    public static void Delete_file(double nDaysBefore, string directory, string searchKey, string ignoreKey = null)
+    public static void Delete_File(double nDaysBefore, string directory,
+      string searchKey, string ignoreKey = null)
     {
       if (Directory.Exists(directory) == false) return;
+      System.Threading.Thread.Sleep(500);
 
       //ファイル取得
       var files = new FileInfo[] { };
@@ -301,7 +301,7 @@ namespace LogoSelector
         if (onefile.Exists == false) continue;
         if (ignoreKey != null && 0 <= onefile.Name.IndexOf(ignoreKey)) continue;
 
-        //nDaysBeforeより前のファイル？
+        //古いファイル？
         bool over_creation = nDaysBefore < (DateTime.Now - onefile.CreationTime).TotalDays;
         bool over_lastwrite = nDaysBefore < (DateTime.Now - onefile.LastWriteTime).TotalDays;
         if (over_creation && over_lastwrite)
@@ -315,26 +315,36 @@ namespace LogoSelector
     /// <summary>
     /// 空フォルダ削除
     /// </summary>
-    /// <param name="directory">空フォルダが削除対象</param>
-    public static void Delete_emptydir(string directory)
+    /// <param name="parent_directory">親フォルダを指定。空のサブフォルダが削除対象、親フォルダ自身は削除されない。</param>
+    public static void Delete_EmptyDir(string parent_directory)
     {
-      if (Directory.Exists(directory) == false) return;
+      if (Directory.Exists(parent_directory) == false) return;
 
+      var dirs = new DirectoryInfo[] { };
       try
       {
-        var dirInfo = new DirectoryInfo(directory);
-
-        if (dirInfo.GetFiles().Count() == 0)
-          Directory.Delete(directory);
+        var dirInfo = new DirectoryInfo(parent_directory);
+        dirs = dirInfo.GetDirectories("*", SearchOption.AllDirectories);
       }
-      catch { }
+      catch (System.UnauthorizedAccessException)
+      {
+        return;
+      }
+
+      foreach (var onedir in dirs)
+      {
+        if (onedir.Exists == false) continue;
+
+        //空フォルダ？
+        var files = onedir.GetFiles();
+        if (files.Count() == 0)
+        {
+          try { onedir.Delete(); }
+          catch { /*フォルダ使用中*/ }
+        }
+      }
     }
-
-
-  }//  static class DeleteWorkItem
-
-
-
+  }
 
 
 }//namespace
