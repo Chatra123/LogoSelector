@@ -1,4 +1,15 @@
-﻿using System;
+﻿/*
+ *  ロゴ、パラメータを検索してフルパスを返す。
+ * 
+ * 　標準出力の
+ * 　 - １行目にロゴ
+ * 　 - ２行目にパラメーター
+ * 　 - ３行目にコメント
+ * 　 を表示する。 
+ */
+
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +31,7 @@ namespace LogoSelector
       //args = new string[] { "あぁアァｱｲｳＡAａa", "", "", };
 
 
-      //設定ファイル読込み
+      //設定ファイル
       var setting = new Setting_File();
       setting = Setting_File.Load();
 
@@ -52,12 +63,11 @@ namespace LogoSelector
                                              );
         }
 
-        //nullなら空文字を入れる
         Logo_Param = Logo_Param ?? new string[] { "", "", };
       }
 
 
-      //NotFound コメント追加
+      //Not Found Comment追加
       if (Logo_Param[0] == "")
         comment += " " + setting.Comment_NotFoundLogo;
 
