@@ -13,6 +13,207 @@ namespace LogoSelector
 
   class Searcher
   {
+    /// <summary>
+    /// TSName  -->  チャンネル名
+    /// </summary>
+    public static string GetCH_fromTsName(
+                                           string tsName,
+                                           bool enable_ShortCH,
+                                           bool enable_NonNumCH,
+                                           List<string> logoDir
+                                         )
+    {
+      //lgdファイル名からチャンネル名一覧を収集
+      //                  normal     short      nonNum
+      List<string> chList_nm, chList_sh, chList_nN;
+      {
+        var filer = new LgdFiler();
+        filer.Collect(logoDir);
+        chList_nm = filer.Lgd_ChList;
+
+        chList_nm = NameConv.GetUWH(chList_nm);
+        chList_sh = NameConv.GetShort(chList_nm);
+        chList_nN = NameConv.GetNonNum(chList_nm);
+      }
+
+
+      //TSファイル名をスペースで分割
+      //                    normal       short        nonNum
+      List<string> nameList_nm, nameList_sh, nameList_nN;
+      {
+        nameList_nm = tsName.Split()
+                            .Where(name => name != "")
+                             //番組タイトルよりも放送局名を先頭にして優先度をあげる。
+                            .OrderBy((name) => name.Length)
+                            .ToList();
+
+        nameList_nm = NameConv.GetUWH(nameList_nm);
+        nameList_sh = NameConv.GetShort(nameList_nm);
+        nameList_nN = NameConv.GetNonNum(nameList_nm);
+      }
+
+
+      string Ch;
+      {
+        string Ch_nm = GetKey_forward(nameList_nm, chList_nm);
+        string Ch_sh = GetKey_forward(nameList_sh, chList_sh);
+        string Ch_nN = GetKey_forward(nameList_nN, chList_nN);
+        Ch =
+          Ch_nm != "" ? Ch_nm :
+          Ch_sh != "" && enable_ShortCH ? Ch_sh :
+          Ch_nN != "" && enable_NonNumCH ? Ch_nN :
+          "";
+      }
+
+      return Ch;
+    }
+
+    /// <summary>
+    /// nameList内に含まれているkeyを取得
+    /// 前方一致  forward match
+    /// </summary>
+    private static string GetKey_forward(List<string> nameList, List<string> keyList)
+    {
+      foreach (var name in nameList)
+        foreach (var key in keyList)
+          if (name.IndexOf(key) == 0)
+            return key;
+
+      return "";
+    }
+
+
+    /// <summary>
+    /// 指定キーワードで検索
+    /// </summary>
+    /// <remarks>
+    ///  SearchSet[0] = keyword
+    ///           [1] = logo name
+    ///           [2] = param name
+    /// </remarks>
+    public static string[] GetLogo_byKeyword(string Ch, List<List<string>> SearchSet, List<string> LogoDir)
+    {
+      string backup = Directory.GetCurrentDirectory();
+
+      foreach (var set in SearchSet)
+      {
+        string keyword = NameConv.GetShort(set[0]);
+        string logo = set[1];
+        string param = set[2];
+
+        if (Ch.Contains(keyword))
+        {
+          foreach (var dir in LogoDir)
+          {
+            if (Directory.Exists(dir) == false)
+              continue;
+            try
+            {
+              var fi_lgd = new FileInfo(logo);
+              var fi_param = new FileInfo(param);
+
+              if (fi_lgd.Exists || fi_param.Exists)
+              {
+                Directory.SetCurrentDirectory(backup);
+                return new string[] { fi_lgd.FullName, fi_param.FullName, };
+              }
+            }
+            catch
+            {
+              continue;
+            }
+          }
+        }
+
+      }
+
+      Directory.SetCurrentDirectory(backup);
+      return null;
+    }
+
+
+
+    /// <summary>
+    /// ロゴフォルダ内から検索
+    /// </summary>
+    public static string[] GetLogo_fromDir(
+                                            string Ch,
+                                            bool enable_ShortCH,
+                                            bool enable_NonNumCH,
+                                            List<string> logoDir
+                                          )
+    {
+      string shortCh = NameConv.GetShort(Ch);
+      string nonNumCh = NameConv.GetNonNum(Ch);
+
+      var filer = new LgdFiler();
+      filer.Collect(logoDir);
+
+      //ロゴ検索
+      string logo = "", logo_FullName = "";
+      {
+        //各パターンで検索
+        //    normal  short  nonNum
+        //  ・通常のチャンネル名
+        //  ・前４文字
+        //  ・数字、記号除去
+        List<string> lgdList = filer.Lgd_NameList;
+        var lgdList_nm = NameConv.GetUWH(lgdList);
+
+        int hit_nm = GetIndex_partial(lgdList_nm, Ch);
+        int hit_sh = GetIndex_partial(lgdList_nm, shortCh);
+        int hit_nN = GetIndex_partial(lgdList_nm, nonNumCh);
+
+        int hit =
+          hit_nm != -1 ? hit_nm :
+          hit_sh != -1 && enable_ShortCH ? hit_sh :
+          hit_nN != -1 && enable_NonNumCH ? hit_nN :
+           -1;
+        if (hit == -1)
+          return null;  //not found
+
+        // *.lgd　→　FullNameを取得
+        // *.ldp　→　lgdファイルを作成してFullNameを取得
+        logo = lgdList[hit];  // UWH変換前の値
+        logo_FullName = filer.GetFullName_Lgd(logo);
+      }
+
+
+      //パラメーター検索
+      string param_FullName = "";
+      {
+        List<string> paramList = filer.Param_NameList;
+
+        int hit = GetIndex_partial(paramList, logo);
+        if (hit == -1)
+          return new string[] { logo_FullName, "" };  //not found
+
+        string param = paramList[hit];
+        param_FullName = filer.GetFullName_Param(param);
+      }
+
+      //found
+      return new string[] { logo_FullName, param_FullName };
+    }
+
+    /// <summary>
+    /// keyを含んでいる要素のindexを取得
+    /// 部分一致  partial match
+    /// </summary>
+    private static int GetIndex_partial(List<string> list, string key)
+    {
+      int index = 0;
+      foreach (var elm in list)
+      {
+        if (elm.Contains(key))
+          return index;
+        else
+          index++;
+      }
+      return -1;
+    }
+
+
 
     /// <summary>
     /// 指定キーワードがあればコメント追加
@@ -21,17 +222,16 @@ namespace LogoSelector
     ///  SearchSet[0] = keyword
     ///           [1] = extra comment
     /// </remarks>
-    public static string AddComment_byKeyword(string CH, List<List<string>> SearchSet)
+    public static string AddComment_byKeyword(string Ch, List<List<string>> SearchSet)
     {
-      string comment = "";
+      string comment = " ";
 
       foreach (var set in SearchSet)
       {
-        string keyword = StrConverter.ToUWH(set[0]);       //大文字全角ひらがなに変換
+        string keyword = NameConv.GetUWH(set[0]);
         string extra_comment = set[1];
 
-        //keywordが含まれているか？
-        if (CH.Contains(keyword))
+        if (Ch.Contains(keyword))
           comment += extra_comment + " ";
       }
 
@@ -39,155 +239,7 @@ namespace LogoSelector
     }
 
 
-    /// <summary>
-    /// 指定キーワードからパラメーター検索
-    /// </summary>
-    /// <remarks>
-    ///   SearchSet[0] = keyword
-    ///            [1] = logo name
-    ///            [2] = param name
-    /// </remarks>
-    public static string[] byKeyword(string CH, List<List<string>> SearchSet, List<string> LogoDir)
-    {
-      foreach (var set in SearchSet)
-      {
-        string keyword = StrConverter.ToUWH(set[0]);       //大文字全角ひらがなに変換
-        string logo = set[1];
-        string param = set[2];
 
-        //keywordが含まれているか？
-        if (CH.Contains(keyword))
-        {
-          //ファイルが存在しているか？
-          foreach (var curdir in LogoDir)
-          {
-            Directory.SetCurrentDirectory(curdir);
-            try
-            {
-              var fi_lgd = new FileInfo(logo);
-              var fi_param = new FileInfo(param);
-
-              if (fi_lgd.Exists || fi_param.Exists)
-                return new string[] { fi_lgd.FullName, fi_param.FullName, };
-            }
-            catch
-            {
-              // next directory
-              continue;
-            }
-          }
-        }
-
-      }
-      return null;
-    }
-
-
-
-    /// <summary>
-    /// フォルダ内からパラメーター検索
-    /// </summary>
-    public static string[] fromDirectory(
-                                          string Ch,
-                                          bool appendSearch_ShortCH,
-                                          bool appendSearch_NonNumCH,
-                                          List<string> logoDir
-                                        )
-    {
-      string shortCh, nonNumCh;
-      {
-        shortCh = Ch;
-        shortCh = (4 < shortCh.Length)
-                     ? shortCh.Substring(0, 4) : shortCh;  //前４文字
-        nonNumCh = Ch;
-        nonNumCh = StrConverter.RemoveNumber(nonNumCh);    //数字除去
-        nonNumCh = StrConverter.RemoveSymbol(nonNumCh);    //記号除去
-      }
-
-      //チェック用関数
-      var FoundItem = new Func<string, bool>((item) => string.IsNullOrEmpty(item) == false);
-
-      //ファイル収集
-      var filer = new FileCollector();
-      filer.Collect(logoDir);
-
-
-      //ロゴ検索
-      string logo = "", logo_FullName = "";
-      {
-        //各パターンで検索
-        //  ・通常のチャンネル名
-        //  ・前４文字
-        //  ・数字、記号除去
-        var logo_normal = GetFromList(Ch, filer.Lgd_NameList);
-        var logo__short = GetFromList(shortCh, filer.Lgd_NameList);
-        var logo_nonNum = GetFromList(nonNumCh, filer.Lgd_NameList);
-
-        //ロゴが見つかった？
-        if (FoundItem(logo_normal))
-        {
-          logo = logo_normal;
-        }
-        else if (appendSearch_ShortCH && FoundItem(logo__short))
-        {
-          logo = logo__short;
-        }
-        else if (appendSearch_NonNumCH && FoundItem(logo_nonNum))
-        {
-          logo = logo_nonNum;
-        }
-        else
-          return new string[] { "", "", "" };  //not found logo
-
-        // *.lgd　→　fullpathを取得
-        // *.ldp　→　lgdファイルを作成してfullpathを取得
-        logo_FullName = filer.GetFullName_Lgd(logo);
-      }
-
-      //パラメーター検索
-      string param = "", param_FullName = "";
-      {
-        var param_nomal = GetFromList(logo, filer.Param_NameList);
-
-        //パラメーターが見つかった？
-        if (FoundItem(param_nomal))
-        {
-          param = param_nomal;
-        }
-        else
-          return new string[] { logo_FullName, "", "" };  //not found param
-
-        param_FullName = filer.GetFullName_Param(param);
-      }
-
-      //found
-      return new string[] { logo_FullName, param_FullName, "" };
-    }
-
-
-
-    /// <summary>
-    /// list内にtargetが含まれているか？
-    /// </summary>
-    public static string GetFromList(string target, List<string> list)
-    {
-      if (target == "") return null;
-      if (list.Count == 0) return null;
-
-      target = StrConverter.ToUWH(target);               //大文字全角ひらがなで比較
-
-      list = list.Where((item) =>
-      {
-        item = StrConverter.ToUWH(item);
-        return item.Contains(target);
-      }).ToList();
-
-      return list.FirstOrDefault();
-    }
   }
-
-
-
-
 
 }
