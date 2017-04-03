@@ -45,8 +45,8 @@ Comment_3 =
 
 [AddComment_NotFound]
 ;;;  ファイルが見つからないときにコメント追加
-; NotFoundLogo  = -Suspend_pfAMain
-; NotFoundParam = -Suspend_pfAMain
+; NotFoundLogo  = -Abort
+; NotFoundParam = -Abort
 
 
 [Option]
