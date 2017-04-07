@@ -9,19 +9,17 @@
  *    - args[2] = ＴＳフルパス
  *   として受けとり、
  * 
- * 　標準出力に
- * 　 - １行目  ロゴ
- * 　 - ２行目  パラメーター
- * 　 - ３行目  コメント
- * 　 を出力 
+ *   標準出力の
+ *    - １行目  ロゴ
+ *    - ２行目  パラメーター
+ *    - ３行目  コメント
+ *    を出力 
  */
 
 /*
  *  リリース出力の exeは dllをマージ済み
  * 　　プロジェクトのプロパティ　→　ビルドイベント
- *  あらかじめ ILMerge.exeが必要
- *  
- *  デバッグ出力の exeには LgdLogo.dllが必要
+ *  あらかじめ ILMerge.exeが必要。
  *  ILMergeの処理に時間がかかるためデバッグ出力ではマージしない
  * 
  */
@@ -32,7 +30,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.VisualBasic;
 
 
 namespace LogoSelector
@@ -44,11 +41,11 @@ namespace LogoSelector
   {
     private static void Main(string[] args)
     {
-
       //テスト引数
       //args = new string[] { "あぁアァｱｲｳＡAａa", "", @"", };
       //args = new string[] { "", "", 
       //                      @"", };
+
 
 
       //例外を捕捉
@@ -59,9 +56,7 @@ namespace LogoSelector
       string AppPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
       string AppDir = System.IO.Path.GetDirectoryName(AppPath);
       Directory.SetCurrentDirectory(AppDir);
-
       var setting = new Setting_File();
-      setting.ReadIni();
 
 
       string Ch = "", Program = "", TsPath = "";
@@ -70,68 +65,46 @@ namespace LogoSelector
         if (1 <= args.Count()) Ch = args[0];
         if (2 <= args.Count()) Program = args[1];
         if (3 <= args.Count()) TsPath = args[2];
-
-        Ch = NameConv.GetUWH(Ch);
-        Program = NameConv.GetUWH(Program);
+        Ch = StrConv.ToUWH(Ch);
+        Program = StrConv.ToUWH(Program);
       }
 
 
-
       string[] Logo_Param = null;
-
       //引数からチャンネル名を取得済み
       if (Ch != "")
       {
         //指定キーワードから
-        Logo_Param = Logo_Param ?? Searcher.GetLogo_byKeyword(
-                                                               Ch,
-                                                               setting.SearchSet_byKeyword,
-                                                               setting.LogoDir
-                                                             );
+        Logo_Param = Logo_Param ?? Searcher.GetLogo_byKeyword(Ch,
+                                                              setting.SearchSet_byKeyword,
+                                                              setting.LogoDir);
         //ロゴフォルダから
-        Logo_Param = Logo_Param ?? Searcher.GetLogo_fromDir(
-                                                             Ch,
-                                                             setting.Enable_ShortCH,
-                                                             setting.Enable_NonNumCH,
-                                                             setting.LogoDir
-                                                           );
+        Logo_Param = Logo_Param ?? Searcher.GetLogo_fromDir(Ch,
+                                                            setting.LogoDir);
       }
 
-
-      //見つからなかったら TsNameからチャンネル名を取得
+      //見つからなかったら TsNameからチャンネル名を探す
       if (Logo_Param == null)
       {
         //ファイル名が重複したときの -(1) を除去
         string TsName;
         TsName = Path.GetFileNameWithoutExtension(TsPath);
         TsName = new Regex(@"^(.*)(-\(\d+\))$").Replace(TsName, "$1");
-        TsName = NameConv.GetUWH(TsName);
-
+        TsName = StrConv.ToUWH(TsName);
         //TSName  -->  チャンネル名
-        Ch = Searcher.GetCH_fromTsName(
-                                        TsName,
-                                        setting.Enable_ShortCH,
-                                        setting.Enable_NonNumCH,
-                                        setting.LogoDir
-                                      );
+        Ch = Searcher.GetCH_fromTsName(TsName,
+                                       setting.LogoDir);
         if (Ch != "")
         {
           //指定キーワードから
-          Logo_Param = Logo_Param ?? Searcher.GetLogo_byKeyword(
-                                                                 Ch,
-                                                                 setting.SearchSet_byKeyword,
-                                                                 setting.LogoDir
-                                                               );
+          Logo_Param = Logo_Param ?? Searcher.GetLogo_byKeyword(Ch,
+                                                                setting.SearchSet_byKeyword,
+                                                                setting.LogoDir);
           //ロゴフォルダから
-          Logo_Param = Logo_Param ?? Searcher.GetLogo_fromDir(
-                                                               Ch,
-                                                               setting.Enable_ShortCH,
-                                                               setting.Enable_NonNumCH,
-                                                               setting.LogoDir
-                                                             );
+          Logo_Param = Logo_Param ?? Searcher.GetLogo_fromDir(Ch,
+                                                              setting.LogoDir);
         }
       }
-
       //Not Found
       Logo_Param = Logo_Param ?? new string[] { "", "" };
 
@@ -141,17 +114,14 @@ namespace LogoSelector
       {
         if (Ch != "")
         {
-          comment += Searcher.AddComment_byKeyword(
-                                                    Ch,
-                                                    setting.SearchSet_AddComment
-                                                  );
+          comment += Searcher.AddComment_byKeyword(Ch,
+                                                   setting.SearchSet_AddComment);
         }
         //Not Found Comment
         if (Logo_Param[0] == "")
-          comment += " " + setting.Mes_NotFoundLogo;
-
+          comment += " " + setting.Comment_NotFoundLogo;
         if (Logo_Param[1] == "")
-          comment += " " + setting.Mes_NotFoundParam;
+          comment += " " + setting.Comment_NotFoundParam;
       }
 
 
@@ -160,7 +130,6 @@ namespace LogoSelector
       Console.WriteLine(Logo_Param[1]);
       Console.WriteLine(comment);
       Console.Error.WriteLine();
-
     }
 
 

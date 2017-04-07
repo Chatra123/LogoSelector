@@ -12,93 +12,81 @@ namespace LogoSelector
 
   class Setting_File
   {
+    private IniFile IniFile;
+
     public List<string> LogoDir { get; private set; }
     public List<List<string>> SearchSet_byKeyword { get; private set; }
     public List<List<string>> SearchSet_AddComment { get; private set; }
-
-    public string Mes_NotFoundLogo { get; private set; }
-    public string Mes_NotFoundParam { get; private set; }
-    public bool Enable_ShortCH { get; private set; }
-    public bool Enable_NonNumCH { get; private set; }
-
+    public string Comment_NotFoundLogo { get; private set; }
+    public string Comment_NotFoundParam { get; private set; }
 
     /// <summary>
     /// constructor
     /// </summary>
     public Setting_File()
     {
+      IniFile = new IniFile();
+
+      //initialize value
       LogoDir = new List<string>();
       SearchSet_byKeyword = new List<List<string>>();
       SearchSet_AddComment = new List<List<string>>();
-      Mes_NotFoundLogo = "";
-      Mes_NotFoundParam = "";
-      Enable_ShortCH = false;
-      Enable_NonNumCH = false;
+      Comment_NotFoundLogo = "";
+      Comment_NotFoundParam = "";
 
       //開発時の利便性のためにアプリフォルダを追加する
       string AppPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
       string AppDir = System.IO.Path.GetDirectoryName(AppPath);
       LogoDir.Add(AppDir);
-   }
+
+      //create ini
+      if (IniFile.IsExist == false)
+      {
+        File.WriteAllText(IniFile.IniPath, IniText.Default, Encoding.GetEncoding("Shift_JIS"));
+        File.AppendAllText(IniFile.IniPath, IniText.Readme, Encoding.GetEncoding("Shift_JIS"));
+      }
+      Read();
+    }
 
 
     /// <summary>
-    /// Iniファイル読み込み
+    /// ReadIni
     /// </summary>
-    public void ReadIni()
+    public void Read()
     {
-      //create ini
-      if (File.Exists(IniHelper.IniPath) == false)
-      {
-        File.WriteAllText(IniHelper.IniPath, IniText.Default, Encoding.GetEncoding("Shift_JIS"));
-        File.AppendAllText(IniHelper.IniPath, IniText.Readme, Encoding.GetEncoding("Shift_JIS"));
-      }
-
-      //Read
       for (int no = 1; no <= 9; no++)
       {
         const string section = "LogoDir";
-        var path = IniHelper.GetString(section, "Path_" + no);
+        var path = IniFile.GetString(section, "Path_" + no);
         if (path != "")
           LogoDir.Add(path);
       }
-
       for (int no = 1; no <= 9; no++)
       {
         const string section = "SearchKeyword";
-        var keyword = IniHelper.GetString(section, "Keyword_" + no);
-        var logo = IniHelper.GetString(section, "Logo_" + no);
-        var param = IniHelper.GetString(section, "Param_" + no);
+        var keyword = IniFile.GetString(section, "Keyword_" + no);
+        var logo = IniFile.GetString(section, "Logo_" + no);
+        var param = IniFile.GetString(section, "Param_" + no);
         if (keyword != "")
           SearchSet_byKeyword.Add(new List<string> { keyword, logo, param });
       }
-
       for (int no = 1; no <= 9; no++)
       {
         const string section = "AddComment_Keyword";
-        var keyword = IniHelper.GetString(section, "Keyword_" + no);
-        var comment = IniHelper.GetString(section, "Comment_" + no);
+        var keyword = IniFile.GetString(section, "Keyword_" + no);
+        var comment = IniFile.GetString(section, "Comment_" + no);
         if (keyword != "")
           SearchSet_AddComment.Add(new List<string> { keyword, comment });
       }
-
-
       {
         const string section = "AddComment_NotFound";
-        var comm_logo = IniHelper.GetString(section, "NotFoundLogo");
+        var comm_logo = IniFile.GetString(section, "NotFoundLogo");
         if (comm_logo != "")
-          Mes_NotFoundLogo = comm_logo;
-
-        var comm_param = IniHelper.GetString(section, "NotFoundParam");
+          Comment_NotFoundLogo =  comm_logo;
+        var comm_param = IniFile.GetString(section, "NotFoundParam");
         if (comm_param != "")
-          Mes_NotFoundParam = comm_param;
+          Comment_NotFoundParam = comm_param;
       }
-      {
-        const string section = "Option";
-        Enable_ShortCH = IniHelper.GetBool(section, "AppendSearch_ShortCH");
-        Enable_NonNumCH = IniHelper.GetBool(section, "AppendSearch_NonNumCH");
-      }
-
     }
 
 
@@ -106,10 +94,9 @@ namespace LogoSelector
     /// <summary>
     /// 結果表示
     /// </summary>
-    public void ShowSetting()
+    public void Show()
     {
       var result = new StringBuilder();
-
       {
         int no = 0;                      //Path_0 = AppDir
         result.AppendLine("[LogoDir]");
@@ -120,7 +107,6 @@ namespace LogoSelector
         }
         result.AppendLine();
       }
-
       {
         int no = 1;
         result.AppendLine("[SearchKeyword]");
@@ -134,7 +120,6 @@ namespace LogoSelector
         }
         result.AppendLine();
       }
-
       {
         int no = 1;
         result.AppendLine("[SearchSet_AddComment]");
@@ -148,17 +133,10 @@ namespace LogoSelector
         }
         result.AppendLine();
       }
-
       result.AppendLine("[AddComment_NotFound]");
-      result.AppendLine("  NotFoundLogo  = " + Mes_NotFoundLogo);
-      result.AppendLine("  NotFoundParam = " + Mes_NotFoundParam);
+      result.AppendLine("  NotFoundLogo  = " + Comment_NotFoundLogo);
+      result.AppendLine("  NotFoundParam = " + Comment_NotFoundParam);
       result.AppendLine();
-
-      result.AppendLine("[Option]");
-      result.AppendLine("  AppendSearch_ShortCH  = " + Enable_ShortCH);
-      result.AppendLine("  AppendSearch_NonNumCH = " + Enable_NonNumCH);
-      result.AppendLine();
-
       Console.Error.WriteLine(result.ToString());
     }
 

@@ -47,7 +47,7 @@
     <Compile Include="lgd\CleanWorkItem.cs" />
     <Compile Include="lgd\LgdFile.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Setting\IniHelper.cs" />
+    <Compile Include="Setting\IniFile.cs" />
     <Compile Include="Setting\IniText.cs" />
     <Compile Include="Setting\Setting_File.cs" />
     <Compile Include="Searcher.cs" />

@@ -18,18 +18,27 @@ namespace OctNov.Ini
   }
 
 
-  static class IniHelper
+
+  class IniFile
   {
     static readonly string AppPath = System.Reflection.Assembly.GetExecutingAssembly().Location,
                            AppDir = Path.GetDirectoryName(AppPath),
                            AppName = Path.GetFileNameWithoutExtension(AppPath);
-    public static readonly string IniPath = Path.Combine(AppDir, AppName + ".ini");
+    public string IniPath { get; private set; }
+    public bool IsExist { get { return File.Exists(IniPath); } }
 
+    /// <summary>
+    /// IniFile
+    /// </summary>
+    public IniFile(string path = null)
+    {
+      IniPath = path ?? Path.Combine(AppDir, AppName + ".ini");
+    }
 
     /// <summary>
     /// ini  -->  string
     /// </summary>
-    public static string GetString(string section, string key, string defaultValue = "")
+    public string GetString(string section, string key, string defaultValue = "")
     {
       var text = new StringBuilder(512);
       WinApi_Ini.GetPrivateProfileString(section, key, defaultValue, text, (uint)text.Capacity, IniPath);
@@ -39,7 +48,7 @@ namespace OctNov.Ini
     /// <summary>
     /// ini  -->  int
     /// </summary>
-    public static int GetInt(string section, string key, int defaultValue = 0)
+    public int GetInt(string section, string key, int defaultValue = 0)
     {
       uint ret = WinApi_Ini.GetPrivateProfileInt(section, key, defaultValue, IniPath);
       return (int)ret;
@@ -48,12 +57,11 @@ namespace OctNov.Ini
     /// <summary>
     /// ini  -->  bool
     /// </summary>
-    public static bool GetBool(string section, string key, int defaultValue = 0)
+    public bool GetBool(string section, string key, bool defaultValue = false)
     {
-      uint ret = WinApi_Ini.GetPrivateProfileInt(section, key, defaultValue, IniPath);
+      uint ret = WinApi_Ini.GetPrivateProfileInt(section, key, defaultValue ? 1 : 0, IniPath);
       return (int)ret != 0;
     }
-
 
   }
 

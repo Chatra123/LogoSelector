@@ -49,13 +49,6 @@ Comment_3 =
 ; NotFoundParam = -Abort
 
 
-[Option]
-;;;  検索追加　チャンネル名を前４文字に短縮して検索
-;;;                   = 0  無効        = 1  有効
-AppendSearch_ShortCH  = 0
-;;;  検索追加　チャンネル名から数字記号を除いて検索
-AppendSearch_NonNumCH = 0
-
 
 
 
@@ -70,6 +63,10 @@ AppendSearch_NonNumCH = 0
 ;;; # LogoSelectorについて
 ;;; 
 ;;;   ロゴ、パラメーターを検索しフルパスを表示します。
+;;; 
+;;; 
+;;; ## 使用準備
+;;;   [LogoDir]の Pathを書き換えてください。
 ;;; 
 ;;; 
 ;;; ## 処理の流れ
@@ -97,8 +94,8 @@ AppendSearch_NonNumCH = 0
 ;;;   基本は ABC.lgd のように チャンネル名.lgd にしてください。
 ;;;   １つの放送局でチャンネル名が複数ある場合には、Abc ABCTV.lgd の様に間に
 ;;;   スペースをいれます。
-;;;   また、Abc ABCTV.ver2016.lgdとチャンネル名の後にピリオドをいれ
-;;;   ることでコメントをいれることができます。
+;;;   また、Abc ABCTV.comment.lgdとチャンネル名の後にピリオドをいれ
+;;;   ることでコメントがいれられます。
 ;;; 
 ;;; 
 ;;; ## paramファイル名について
@@ -112,12 +109,12 @@ AppendSearch_NonNumCH = 0
 ;;;
 ;;;   ABC.lgd
 ;;;   ABC.lgd.autoTune.param
-;;; 
+;;;
 ;;;   Abc ABCTV.lgd
 ;;;   Abc ABCTV.lgd.param
 ;;; 
-;;;   Abc ABCTV.ver2016.lgd
-;;;   Abc ABCTV.ver2016.lgd.comment.param
+;;;   Abc ABCTV.comment1.lgd
+;;;   Abc ABCTV.comment1.lgd.comment2.param
 ;;; 
 ;;; 
 ;;; 
@@ -129,12 +126,17 @@ AppendSearch_NonNumCH = 0
 ;;;     番組タイトル チャンネル名-(1).ts
 ;;;   のように間にスペースを入れてください。
 ;;; 
-;;;   元になるチャンネル名の候補はlgdファイル名から収集し、前方一致で検索します。
+;;;   元になるチャンネル名の候補をlgdファイル名から収集し、前方一致で検索します。
 ;;;   ファイル名が重複したときの -(1) はあっても問題ありません。
 ;;; 
 ;;; 
 ;;; ## その他
 ;;;
+;;;    * 通常のチャンネル名で見つからない場合は数字を除いたチャンネル名でも検索します。
+;;;      * チャンネル名”東海テレビ001”で見つからなければ、”東海テレビ”でも検索します。
+;;;      * チャンネル名”BSフジ・181”  で見つからなければ、”BSフジ”    でも検索します。
+;;; 
+;;; 
 ;;;    * 検索において全角半角、大文字小文字、ひらがなカタカナの違いは無視します。
 ;;;   
 ;;;    * lgd以外にも ldp, lgd2, ldp2に一部対応 。
