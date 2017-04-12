@@ -65,12 +65,13 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set name_new=$(TargetName)_MergeDLL.exe
+    <PostBuildEvent>setlocal
+set name_new=$(TargetName)_MergeDLL.exe
 set ILMerge="C:\Program Files (x86)\Microsoft\ILMerge\ILMerge.exe"
 if $(ConfigurationName) == Release (
   %25ILMerge%25  /v4 /wildcards /out:%25name_new%25 $(TargetFileName)  *.dll
 )
-</PostBuildEvent>
+endlocal</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
