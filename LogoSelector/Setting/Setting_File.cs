@@ -42,8 +42,7 @@ namespace LogoSelector
       //create ini
       if (IniFile.IsExist == false)
       {
-        File.WriteAllText(IniFile.IniPath, IniText.Default, Encoding.GetEncoding("Shift_JIS"));
-        File.AppendAllText(IniFile.IniPath, IniText.Readme, Encoding.GetEncoding("Shift_JIS"));
+        File.AppendAllText(IniFile.IniPath, IniText.Default + IniText.Readme, Encoding.GetEncoding("Shift_JIS"));
       }
       Read();
     }
@@ -82,7 +81,7 @@ namespace LogoSelector
         const string section = "AddComment_NotFound";
         var comm_logo = IniFile.GetString(section, "NotFoundLogo");
         if (comm_logo != "")
-          Comment_NotFoundLogo =  comm_logo;
+          Comment_NotFoundLogo = comm_logo;
         var comm_param = IniFile.GetString(section, "NotFoundParam");
         if (comm_param != "")
           Comment_NotFoundParam = comm_param;
