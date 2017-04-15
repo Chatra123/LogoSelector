@@ -10,7 +10,7 @@ using Microsoft.VisualBasic;           //Strings.StrConv
 namespace OctNov.Text
 {
   /// <summary>
-  /// 文字形式の変換、除去
+  /// 文字の変換、除去
   /// </summary>
   static class StrConv  //String Converter
   {
@@ -66,7 +66,7 @@ namespace OctNov.Text
     /// </summary>
     public static string ToNonNum(string text)
     {
-      // \W  文字、数字、アンダースコア
+      // \W  文字、数字、アンダースコア以外
       // \d  数字
       // _   アンダースコア
       text = Regex.Replace(text, @"[\W\d_]", "");
