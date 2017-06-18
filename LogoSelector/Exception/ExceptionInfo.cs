@@ -1,5 +1,5 @@
 ﻿/*
- * 最終更新日　16/04/04
+ * 最終更新日　16/06/18
  * 
  * □概要
  * 
@@ -23,7 +23,7 @@ using System.Text;
 
 namespace OctNov.Excp
 {
-  static class ExceptionInfo
+  public static class ExceptionInfo
   {
     /// <summary>
     /// 例外発生時に内容をファイルに保存する。
